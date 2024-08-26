@@ -64,9 +64,9 @@ Refer to the app.py file for more available endpoints and their usage.
 ```curl http://127.0.0.1:5000/articles_by_keyword/economy```
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**Contributing**
+# Contributing
 Contributions are welcome! Please fork the repository and submit a pull request for review.
 
-**License**
+# License
 This project is licensed under the MIT License. See the LICENSE file for more details.
 
