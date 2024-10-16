@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Articles by Month</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div style="width: 75%; margin: auto;">
+        <h2>Articles Published in <span id="month-label"></span></h2>
+        <canvas id="articlesChart" width="400" height="200"></canvas>
+    </div>
+
+    <script>
+        const year = 2023; // Replace with desired year
+        const month = 9;   // Replace with desired month (1-12)
+        const apiUrl = `http://localhost:5000/articles_by_month/${year}/${month}`;
+
+        // Function to format the month name
+        function getMonthName(monthNumber) {
+            const monthNames = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+            return monthNames[monthNumber - 1];
+        }
+
+        // Set the month label dynamically
+        document.getElementById('month-label').innerText = `${getMonthName(month)} ${year}`;
+
+        // Fetch data from the Flask API
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    // Handle no articles case
+                    alert(data.message);
+                    return;
+                }
+
+                // Prepare data for the chart
+                const articleCount = data.length; // Count the number of articles
+                const chartData = [articleCount]; // Single data point for this month
+
+                // Create the Chart.js column chart
+                const ctx = document.getElementById('articlesChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: [`Articles in ${getMonthName(month)} ${year}`],
+                        datasets: [{
+                            label: 'Number of Articles',
+                            data: chartData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0 // Ensure whole numbers
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false // Hide the legend
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error loading articles:', error);
+                alert('Failed to load articles. Please check the API.');
+            });
+    </script>
+</body>
+</html>

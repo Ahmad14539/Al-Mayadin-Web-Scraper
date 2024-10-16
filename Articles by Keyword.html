@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Articles by Keyword</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h2>Articles by Keyword</h2>
+
+    <label for="keywordInput">Enter Keyword:</label>
+    <input type="text" id="keywordInput" placeholder="Enter keyword">
+    <button onclick="fetchData()">Search</button>
+
+    <canvas id="articlesBubbleChart" width="400" height="200"></canvas>
+
+    <script>
+        function fetchData() {
+            const keyword = document.getElementById('keywordInput').value;
+            if (!keyword) {
+                alert('Please enter a keyword');
+                return;
+            }
+
+            fetch(`http://localhost:5000/articles_by_keyword/${keyword}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        alert('No articles found for the keyword');
+                        return;
+                    }
+
+                    // Process data for the bubble chart
+                    const chartData = data.map(article => ({
+                        x: new Date(article.published_time).getTime(),  // X-axis represents time (published date)
+                        y: Math.random() * 100,  // Y-axis is a random value (could represent importance or rank)
+                        r: Math.random() * 20 + 10  // Bubble size (could represent some metric, here we randomize for demo)
+                    }));
+
+                    // Create or update the bubble chart
+                    const ctx = document.getElementById('articlesBubbleChart').getContext('2d');
+                    const bubbleChart = new Chart(ctx, {
+                        type: 'bubble',
+                        data: {
+                            datasets: [{
+                                label: `Articles with Keyword: ${keyword}`,
+                                data: chartData,
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Published Time'
+                                    },
+                                    ticks: {
+                                        callback: function(value) {
+                                            return new Date(value).toLocaleDateString();
+                                        }
+                                    }
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'Y-Axis (Custom Value)'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(tooltipItem) {
+                                            const article = data[tooltipItem.dataIndex];
+                                            return `Title: ${article.title}\nAuthor: ${article.author}\nPublished: ${new Date(article.published_time).toLocaleDateString()}`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+    </script>
+</body>
+</html>

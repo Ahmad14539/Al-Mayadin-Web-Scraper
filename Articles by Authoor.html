@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Articles by Author</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h2>Articles by Author</h2>
+
+    <label for="authorInput">Enter Author Name:</label>
+    <input type="text" id="authorInput" placeholder="Enter author name">
+    <button onclick="fetchData()">Search</button>
+
+    <canvas id="authorBarChart" width="400" height="200"></canvas>
+
+    <script>
+        function fetchData() {
+            const authorName = document.getElementById('authorInput').value;
+            if (!authorName) {
+                alert('Please enter an author name');
+                return;
+            }
+
+            fetch(`http://localhost:5000/articles_by_author/${authorName}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        alert('No articles found for this author');
+                        return;
+                    }
+
+                    // Extract dates and titles for the bar chart
+                    const dates = data.map(article => new Date(article.published_time).toLocaleDateString());
+                    const titles = data.map(article => article.title);
+
+                    // Create the bar chart
+                    const ctx = document.getElementById('authorBarChart').getContext('2d');
+                    const barChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: titles,  // X-axis: Titles of the articles
+                            datasets: [{
+                                label: `Articles by ${authorName}`,
+                                data: dates.map((_, i) => i + 1), // Sequential count for Y-axis
+                                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Article Title'
+                                    }
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'Number of Articles'
+                                    },
+                                    beginAtZero: true
+                                }
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(tooltipItem) {
+                                            const article = data[tooltipItem.dataIndex];
+                                            return `Title: ${article.title}\nPublished: ${new Date(article.published_time).toLocaleDateString()}`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+    </script>
+</body>
+</html>
